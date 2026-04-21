@@ -1,12 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { stripe, PLANS, type PlanKey } from "@/lib/stripe";
+import { getStripe, STRIPE_PRICE_IDS, PLANS, type PlanKey } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -17,7 +15,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
   }
 
-  const { priceId, name } = PLANS[plan as PlanKey];
+  const stripe = getStripe();
+  const priceId = STRIPE_PRICE_IDS[plan as PlanKey];
   const origin = request.headers.get("origin") ?? "http://localhost:3000";
 
   const session = await stripe.checkout.sessions.create({
@@ -28,9 +27,7 @@ export async function POST(request: Request) {
     metadata: { userId: user.id, plan },
     success_url: `${origin}/dashboard?payment=success&plan=${plan}`,
     cancel_url: `${origin}/dashboard`,
-    subscription_data: {
-      metadata: { userId: user.id, plan },
-    },
+    subscription_data: { metadata: { userId: user.id, plan } },
   });
 
   return NextResponse.json({ url: session.url });

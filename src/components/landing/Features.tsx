@@ -1,3 +1,5 @@
+"use client";
+
 const features = [
   {
     num: "01",

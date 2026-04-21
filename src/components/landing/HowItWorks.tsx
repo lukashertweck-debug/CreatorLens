@@ -1,3 +1,5 @@
+"use client";
+
 const steps = [
   { n: "1", title: "Describe your account", desc: "Enter your platform, niche, and paste a few recent post descriptions. No API keys needed." },
   { n: "2", title: "Add your competitors", desc: "Drop in up to 3 competitor handles. We search and analyze their public content in real time." },

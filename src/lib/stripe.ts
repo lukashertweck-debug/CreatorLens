@@ -1,35 +1,24 @@
 import Stripe from "stripe";
+import { PLANS, type PlanKey } from "./constants";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-03-25.dahlia",
-});
+export { PLANS, type PlanKey };
 
-export const PLANS = {
-  starter: {
-    name: "Starter",
-    price: "€9",
-    priceId: process.env.STRIPE_STARTER_PRICE_ID!,
-    description: "5 analyses/month · 2 competitors",
-  },
-  pro: {
-    name: "Pro",
-    price: "€29",
-    priceId: process.env.STRIPE_PRO_PRICE_ID!,
-    description: "Unlimited · All platforms · Calendar",
-  },
-  agency: {
-    name: "Agency",
-    price: "€79",
-    priceId: process.env.STRIPE_AGENCY_PRICE_ID!,
-    description: "10 accounts · White-label · API",
-  },
-} as const;
+let _stripe: Stripe | null = null;
 
-export type PlanKey = keyof typeof PLANS;
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error("STRIPE_SECRET_KEY is not set");
+    }
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2026-03-25.dahlia",
+    });
+  }
+  return _stripe;
+}
 
-export const ADMIN_EMAILS = [
-  "admin@creatorlens.io",
-  "lukas@hertweck.de",
-  "founder@creatorlens.io",
-  "lukashertweck@icloud.com",
-];
+export const STRIPE_PRICE_IDS: Record<PlanKey, string> = {
+  starter: process.env.STRIPE_STARTER_PRICE_ID ?? "",
+  pro: process.env.STRIPE_PRO_PRICE_ID ?? "",
+  agency: process.env.STRIPE_AGENCY_PRICE_ID ?? "",
+};
